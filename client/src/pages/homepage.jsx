@@ -1,7 +1,10 @@
 import { ArrowRight, HelpCircle, Zap, Gift } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { LightPillar } from "../components/background.jsx";
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const [hoveredCard, setHoveredCard] = useState(null);
 
   // Style variables
@@ -11,7 +14,9 @@ export default function HomePage() {
   
   // Main text, Left side
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-800 text-white">
+    <>
+      <LightPillar/>
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-800 text-white">
 
       <section className="max-w-7xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-12 items-center">
 
@@ -30,10 +35,14 @@ export default function HomePage() {
           </p>
 
           <div className="flex gap-4">
-            <button className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 transition px-6 py-3 rounded-lg font-semibold">
+            <button
+              onClick={() => navigate("/quiz")}
+              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 transition px-6 py-3 rounded-lg font-semibold"
+            >
               Start Quiz Now
               <ArrowRight size={18} />
             </button>
+
 
             <button className="px-6 py-3 rounded-lg border border-purple-400/40 hover:bg-purple-400/10 transition">
               Learn More
@@ -118,6 +127,7 @@ export default function HomePage() {
 
         </div>
       </section>
-    </div>
+      </div>
+    </>
   )
 }
