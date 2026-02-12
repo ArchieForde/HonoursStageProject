@@ -7,12 +7,12 @@ export default function HomePage() {
   const navigate = useNavigate();
   const [hoveredCard, setHoveredCard] = useState(null);
 
-  // Style variables
+  {/* Style variables */}
   const cardStyles = "bg-purple-800/40 backdrop-blur-sm p-8 rounded-xl border border-purple-700/40 cursor-pointer transition-all duration-300 hover:border-purple-500/80 hover:bg-purple-800/60 hover:shadow-lg hover:shadow-purple-500/20 transform hover:scale-105 hover:-translate-y-1";
   const iconContainerBase = "flex justify-center mb-4 transition-transform duration-300 origin-center";
   const hoverTextStyles = "mt-4 text-sm text-purple-300 animate-fadeIn";
   
-  // Main text, Left side
+  {/* Main text, Left side */}
   return (
     <>
       <LightPillar/>
@@ -34,6 +34,7 @@ export default function HomePage() {
             Answer this questionaire and discover games tailored to your taste using live RAWG data.
           </p>
 
+          {/*Main page buttons for CTA */}
           <div className="flex gap-4">
             <button
               onClick={() => navigate("/quiz")}
@@ -50,6 +51,7 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/*Photo of Controller added to the right side */}
         <div className="relative translate-x-70">
           <div className="absolute -inset-2 rounded-2xl bg-purple-500/30 blur-2xl"></div>
           <img
@@ -61,6 +63,7 @@ export default function HomePage() {
 
       </section>
 
+      {/* Explanation cards explaining the website, added interactivity to them */}
       <section className="max-w-6xl mx-auto px-6 py-2">
         <h2 className="text-3xl font-bold text-center mb-12">
           How It Works

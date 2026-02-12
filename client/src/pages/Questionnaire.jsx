@@ -2,8 +2,10 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
 import questions from "../data/questions";
 import QuestionCard from "../components/questioncard";
+import { useNavigate } from "react-router-dom";
 
 export default function QuizPage() {
+  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [showError, setShowError] = useState(false);
@@ -91,7 +93,14 @@ export default function QuizPage() {
           </button>
 
           <button
-            onClick={nextQuestion}
+            onClick={() => {
+              if (currentIndex === questions.length - 1) {
+                navigate("/results");
+
+              } else {
+                nextQuestion();
+              }
+            }}
             className="flex items-center gap-2 px-8 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-purple-500/50 transform hover:scale-105"
           >
             {currentIndex === questions.length - 1 ? "Finish" : "Next"}

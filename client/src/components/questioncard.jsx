@@ -1,5 +1,7 @@
+
 export default function QuestionCard({ question, value, onChange }) {
-  // For multiple type, value will be an array
+   
+  // Check if an option is selected in a multiple choice question
   const isMultipleSelected = (option) => {
     if (Array.isArray(value)) {
       return value.includes(option);
@@ -7,6 +9,7 @@ export default function QuestionCard({ question, value, onChange }) {
     return false;
   };
 
+  // Toggle an option on/off for multiple choice questions, respecting maxSelections limit
   const handleMultipleChange = (option) => {
     if (Array.isArray(value)) {
       if (value.includes(option)) {
@@ -21,15 +24,19 @@ export default function QuestionCard({ question, value, onChange }) {
     }
   };
 
+  {/* Main question card with purple gradient background */}
   return (
     <div className="bg-purple-800/20 backdrop-blur-lg rounded-2xl p-8 border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 shadow-xl">
+      {/* Question title */}
       <h2 className="text-2xl font-bold mb-2 text-purple-50 leading-tight">
         {question.question}
       </h2>
+      {/* text  to explain for multiple choice questions */}
       {question.type === "multiple" && (
         <p className="text-sm text-purple-300 mb-6">Select up to {question.maxSelections} options</p>
       )}
 
+      {/* Single choice questions */}
       {question.type === "single" &&
         <div className="space-y-3">
           {question.options.map((option, index) => (
@@ -52,6 +59,7 @@ export default function QuestionCard({ question, value, onChange }) {
         </div>
       }
 
+      {/* Multiple choice question the user can select multiple options with checkboxes */}
       {question.type === "multiple" &&
         <div className="space-y-3">
           {question.options.map((option, index) => (
@@ -68,6 +76,7 @@ export default function QuestionCard({ question, value, onChange }) {
                 animation: `slideIn 0.3s ease-out ${index * 0.05}s both`
               }}
             >
+              {/* Shows the Checkbox has been checked */}
               <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all
                 ${isMultipleSelected(option) ? "bg-white border-white" : "border-purple-400"}
               `}>
@@ -79,6 +88,7 @@ export default function QuestionCard({ question, value, onChange }) {
         </div>
       }
 
+      {/* rating / number questions, the user selects a number rating (1-5, 1-10, etc.) */}
       {question.type === "scale" &&
         <div className="flex flex-wrap gap-3 justify-center">
           {question.scale.map((num, index) => (
@@ -101,6 +111,7 @@ export default function QuestionCard({ question, value, onChange }) {
         </div>
       }
 
+      {/* Animation styles for option buttons sliding in */}
       <style>{`
         @keyframes slideIn {
           from {
