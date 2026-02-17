@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import HomePage from "./pages/homepage";
 import QuizPage from "./pages/Questionnaire";
 import ResultsPage from "./pages/resultsPage";
+import WishlistPage from "./pages/wishlistPage";
 import Navbar from "./components/navbar";
 
 export default function App() {
@@ -14,6 +15,7 @@ export default function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/quiz" element={<QuizPage />} />
       <Route path="/results" element={<ResultsPage />} />
+      <Route path="/wishlist" element={<WishlistPage />} />
     </Routes>
     </>
   );
