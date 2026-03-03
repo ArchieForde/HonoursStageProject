@@ -95,8 +95,10 @@ export default function QuizPage() {
           <button
             onClick={() => {
               if (currentIndex === questions.length - 1) {
-                navigate("/results");
-
+                // Passed the first selected genre to results
+                const selectedGenres = answers.genres;
+                const genre = Array.isArray(selectedGenres) ? selectedGenres[0]?.toLowerCase() : 'action';
+                navigate("/results", { state: { genre } });
               } else {
                 nextQuestion();
               }

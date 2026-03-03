@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import GameCard from "../components/gamecard";
 import Button from "../components/button";
 import { LightPillar } from "../components/background.jsx";
-import { useWishlist } from "../hooks/useWishlist";
+import { useWishlist } from "../components/wishlistLogic";
 
 export default function Results() {
   const { state } = useLocation();
@@ -12,31 +12,66 @@ export default function Results() {
   const touchStartX = useRef(null);
   const touchEndX = useRef(null);
 
-  {/* dummy data to test results page while backend is under development*/}
-  const games = state?.games || [
-    {
-      id: 1,
-      name: "Cyberpunk 2077",
-      rating: 4.2,
-      image: "https://assets1.ignimgs.com/2019/08/27/cp77-kv-en-1566871767337.jpg"
-    },
-    {
-      id:2,
-      name: "Elden Ring",
-      rating: 4.8,
-      image: "https://wallpapersbq.com/images/elden-ring/elden-ring-wallpaper-4.webp"
-    },
-    {
-      id: 3, 
-      name: "God of War",
-      rating: 4.7,
-      image: "https://wallpaperaccess.com/full/357451.png"
-    }
-  ];
-
+  const [games, setGames] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState('right');
   const { isInWishlist, toggleGame } = useWishlist();
+
+  // Fetch the games from backend API
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const genre = state?.genre || 'action';
+        const response = await fetch(`http://localhost:5000/api/games?genre=${genre}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch games');
+        }
+        
+        const data = await response.json();
+        
+        // Transform the RAWG data to match the game card 
+        const transformedGames = data.map(game => ({
+          id: game.id,
+          name: game.name,
+          rating: game.rating || 0,
+          image: game.background_image || 'https://via.placeholder.com/400x300?text=No+Image'
+        }));
+        
+        setGames(transformedGames);
+      } catch (err) {
+        console.error('Error fetching games:', err);
+        setError(err.message);
+        // Fallback to the dummy data for now on error
+        setGames([
+          {
+            id: 1,
+            name: "Cyberpunk 2077",
+            rating: 4.2,
+            image: "https://assets1.ignimgs.com/2019/08/27/cp77-kv-en-1566871767337.jpg"
+          },
+          {
+            id:2,
+            name: "Elden Ring",
+            rating: 4.8,
+            image: "https://wallpapersbq.com/images/elden-ring/elden-ring-wallpaper-4.webp"
+          },
+          {
+            id: 3, 
+            name: "God of War",
+            rating: 4.7,
+            image: "https://wallpaperaccess.com/full/357451.png"
+          }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGames();
+  }, [state?.genre]);
 
   const nextGame = () => {
     setDirection('right');
@@ -81,7 +116,43 @@ export default function Results() {
   };
 
   const currentGame = games[currentIndex];
-  const isSaved = isInWishlist(currentGame.id);
+  const isSaved = currentGame ? isInWishlist(currentGame.id) : false;
+
+  if (loading) {
+    return (
+      <div 
+        className="min-h-screen text-white overflow-hidden relative flex items-center justify-center"
+        style={{
+          backgroundImage: 'linear-gradient(135deg, #1e1b4b 0%, #2e1065 25%, #1a1a2e 50%, #16213e 75%, #0f3460 100%)',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-xl text-purple-200">Finding your perfect games...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (games.length === 0) {
+    return (
+      <div 
+        className="min-h-screen text-white overflow-hidden relative flex items-center justify-center"
+        style={{
+          backgroundImage: 'linear-gradient(135deg, #1e1b4b 0%, #2e1065 25%, #1a1a2e 50%, #16213e 75%, #0f3460 100%)',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        <div className="text-center">
+          <p className="text-xl text-purple-200 mb-4">No games found</p>
+          <Button variant="primary" onClick={() => navigate("/")}>
+            Take Quiz Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 

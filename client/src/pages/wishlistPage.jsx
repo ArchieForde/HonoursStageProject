@@ -3,7 +3,7 @@ import { Trash2, ArrowLeft } from "lucide-react";
 import GameCard from "../components/gamecard";
 import Button from "../components/button";
 import { LightPillar } from "../components/background.jsx";
-import { useWishlist } from "../hooks/useWishlist";
+import { useWishlist } from "../components/wishlistLogic";
 
 export default function WishlistPage() {
   const navigate = useNavigate();
