@@ -1,10 +1,11 @@
-import { ChevronLeft, ChevronRight, BookmarkPlus, Share2, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, BookmarkPlus, Share2, Star, Info } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import GameCard from "../components/gamecard";
 import Button from "../components/button";
 import { LightPillar } from "../components/background.jsx";
 import { useWishlist } from "../components/wishlistLogic";
+import GameDetailModal from "../components/GameCardDetails.jsx";
 
 export default function Results() {
   const { state } = useLocation();
@@ -17,9 +18,10 @@ export default function Results() {
   const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState('right');
+  const [selectedGameId, setSelectedGameId] = useState(null);
   const { isInWishlist, toggleGame } = useWishlist();
 
-  // Fetch the games from backend API
+  // Fetch the games from RAWG
   useEffect(() => {
     const fetchGames = async () => {
       try {
@@ -205,9 +207,13 @@ export default function Results() {
 
             {/* Main Card */}
             <div className="w-full max-w-2xl">
-              <div className={`animate-fadeIn transition-all duration-500 ${
-                direction === 'right' ? 'slide-in-right' : 'slide-in-left'
-              }`}>
+              <div
+                className={`animate-fadeIn transition-all duration-500 cursor-pointer hover:scale-[1.02] ${
+                  direction === 'right' ? 'slide-in-right' : 'slide-in-left'
+                }`}
+                onClick={() => setSelectedGameId(currentGame.id)}
+                title="Click to view details"
+              >
                 <GameCard game={currentGame} />
               </div>
 
@@ -236,7 +242,7 @@ export default function Results() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-3">
+                <div className="flex gap-3 flex-wrap">
                   <Button
                     variant={isSaved ? "primary" : "secondary"}
                     size="md"
@@ -245,6 +251,15 @@ export default function Results() {
                     className="transition-all duration-300 hover:scale-105"
                   >
                     {isSaved ? "Saved" : "Save Game"}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    icon={Info}
+                    onClick={() => setSelectedGameId(currentGame.id)}
+                    className="transition-all duration-300 hover:scale-105"
+                  >
+                    View Details
                   </Button>
                   <Button
                     variant="secondary"
@@ -325,6 +340,19 @@ export default function Results() {
         </div>
 
       </section>
+
+      {/* Game Detail Modal */}
+      {selectedGameId && (
+        <GameDetailModal
+          gameId={selectedGameId}
+          onClose={() => setSelectedGameId(null)}
+          isSaved={isInWishlist(selectedGameId)}
+          onToggleSave={() => {
+            const game = games.find(g => g.id === selectedGameId);
+            if (game) toggleGame(game);
+          }}
+        />
+      )}
     </div>
   );
 }

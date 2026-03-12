@@ -1,13 +1,16 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trash2, ArrowLeft } from "lucide-react";
+import { Trash2, ArrowLeft, Info } from "lucide-react";
 import GameCard from "../components/gamecard";
 import Button from "../components/button";
 import { LightPillar } from "../components/background.jsx";
 import { useWishlist } from "../components/wishlistLogic";
+import GameDetailModal from "../components/GameCardDetails.jsx";
 
 export default function WishlistPage() {
   const navigate = useNavigate();
-  const { wishlist, removeGame, clearWishlist } = useWishlist();
+  const { wishlist, removeGame, clearWishlist, isInWishlist, toggleGame } = useWishlist();
+  const [selectedGameId, setSelectedGameId] = useState(null);
 
   if (wishlist.length === 0) {
     return (
@@ -92,15 +95,31 @@ export default function WishlistPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {wishlist.map((game) => (
             <div key={game.id} className="relative group">
-              <GameCard game={game} />
+              {/* Clickable card */}
+              <div
+                className="cursor-pointer hover:scale-[1.02] transition-transform duration-200"
+                onClick={() => setSelectedGameId(game.id)}
+                title="Click to view details"
+              >
+                <GameCard game={game} />
+              </div>
               
               {/* Remove Button - Overlay on hover */}
               <button
-                onClick={() => removeGame(game.id)}
+                onClick={(e) => { e.stopPropagation(); removeGame(game.id); }}
                 className="absolute top-4 right-4 bg-red-600 hover:bg-red-500 p-2 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-lg"
                 aria-label="Remove from wishlist"
               >
                 <Trash2 size={20} />
+              </button>
+
+              {/* View Details button */}
+              <button
+                onClick={() => setSelectedGameId(game.id)}
+                className="absolute top-4 left-4 flex items-center gap-1.5 bg-purple-700/80 hover:bg-purple-600 px-3 py-1.5 rounded-full text-xs text-white transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-lg"
+              >
+                <Info size={13} />
+                Details
               </button>
 
               {/* Added date */}
@@ -131,6 +150,19 @@ export default function WishlistPage() {
           </Button>
         </div>
       </section>
+
+      {/* Game Detail Modal */}
+      {selectedGameId && (
+        <GameDetailModal
+          gameId={selectedGameId}
+          onClose={() => setSelectedGameId(null)}
+          isSaved={isInWishlist(selectedGameId)}
+          onToggleSave={() => {
+            const game = wishlist.find(g => g.id === selectedGameId);
+            if (game) toggleGame(game);
+          }}
+        />
+      )}
     </div>
   );
 }
