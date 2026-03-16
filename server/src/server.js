@@ -1,11 +1,24 @@
+// Load environment variables BEFORE any imports
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from 'url';
+
+// Get current directory for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env from server directory - MUST happen before other imports
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
+
+// Debug: print loaded env vars  
+console.log("RAWG_API_KEY loaded:", process.env.RAWG_API_KEY ? "YES" : "NO");
+
+// Now import everything else AFTER dotenv
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import mongoose from "mongoose";
 import gameRoutes from "./routes/gameRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
-
-dotenv.config();
 
 const app = express();
 

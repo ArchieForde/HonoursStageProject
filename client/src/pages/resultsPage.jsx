@@ -21,10 +21,49 @@ export default function Results() {
   const [selectedGameId, setSelectedGameId] = useState(null);
   const { isInWishlist, toggleGame } = useWishlist();
 
-  // Fetch the games from RAWG
+  // Fetch the games from RAWG using ML recommendations
   useEffect(() => {
     const fetchGames = async () => {
       try {
+        // Get user answers from questionnaire
+        const userAnswers = state?.userAnswers || {};
+        
+        // If we have user answers, use ML recommendation endpoint
+        if (Object.keys(userAnswers).length > 0) {
+          const response = await fetch('http://localhost:5000/api/games/recommend', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              answers: userAnswers,
+              limit: 5
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to get recommendations');
+          }
+          
+          const data = await response.json();
+          
+          if (data.success && data.recommendations) {
+            // Transform the ML recommendations to match game card format
+            const transformedGames = data.recommendations.map(game => ({
+              id: game.id,
+              name: game.name,
+              rating: game.rating || 0,
+              image: game.background_image || 'https://via.placeholder.com/400x300?text=No+Image',
+              match_percentage: game.match_percentage || 0  // ML match score
+            }));
+            
+            setGames(transformedGames);
+            console.log('ML Recommendations:', data.recommendations);
+            return;
+          }
+        }
+        
+        // Fallback: Use old genre-based approach if no user answers
         const genre = state?.genre || 'action';
         const response = await fetch(`http://localhost:5000/api/games?genre=${genre}`);
         
@@ -73,7 +112,7 @@ export default function Results() {
     };
 
     fetchGames();
-  }, [state?.genre]);
+  }, [state?.genre, state?.userAnswers]);
 
   const nextGame = () => {
     setDirection('right');
@@ -239,6 +278,13 @@ export default function Results() {
                       <span className="text-purple-200">{currentGame.rating.toFixed(1)}/5</span>
                     </div>
                   </div>
+                  {/* ML Match Percentage Badge */}
+                  {currentGame.match_percentage !== undefined && (
+                    <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2 rounded-lg">
+                      <span className="text-white font-bold">{currentGame.match_percentage}%</span>
+                      <span className="text-green-100 text-xs ml-1">match</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}
