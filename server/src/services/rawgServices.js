@@ -39,3 +39,20 @@ export const fetchGamesByGenre = async (genre) => {
     throw error;
   }
 };
+
+export const fetchSimilarGames = async (gameId) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/games/${gameId}/similar`, {
+      params: {
+        key: process.env.RAWG_API_KEY,
+        page_size: 10
+      }
+    });
+
+    return response.data.results || [];
+
+  } catch (error) {
+    console.error("RAWG API Error (similar):", error.message);
+    throw error;
+  }
+};

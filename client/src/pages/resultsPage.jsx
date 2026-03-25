@@ -19,14 +19,38 @@ export default function Results() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState('right');
   const [selectedGameId, setSelectedGameId] = useState(null);
+  const [showAllGames, setShowAllGames] = useState(false);
   const { isInWishlist, toggleGame } = useWishlist();
 
   // Fetch the games from RAWG using ML recommendations
   useEffect(() => {
     const fetchGames = async () => {
+      // Check if user just completed the questionnaire (has new answers)
+      const userAnswers = state?.userAnswers || {};
+      const hasNewAnswers = Object.keys(userAnswers).length > 0;
+      
+      // If no new answers, try to load from localStorage first
+      if (!hasNewAnswers) {
+        const savedGames = localStorage.getItem('savedRecommendations');
+        if (savedGames) {
+          try {
+            const parsedGames = JSON.parse(savedGames);
+            if (parsedGames && parsedGames.length > 0) {
+              setGames(parsedGames);
+              setLoading(false);
+              return;
+            }
+          } catch (e) {
+            console.error('Error loading saved games:', e);
+          }
+        }
+      } else {
+        // Clear previous saved games when taking new quiz
+        localStorage.removeItem('savedRecommendations');
+      }
+      
+      // If we reach here, we need to fetch new games
       try {
-        // Get user answers from questionnaire
-        const userAnswers = state?.userAnswers || {};
         
         // If we have user answers, use ML recommendation endpoint
         if (Object.keys(userAnswers).length > 0) {
@@ -54,10 +78,19 @@ export default function Results() {
               name: game.name,
               rating: game.rating || 0,
               image: game.background_image || 'https://via.placeholder.com/400x300?text=No+Image',
-              match_percentage: game.match_percentage || 0  // ML match score
+              match_percentage: game.match_percentage || 0,  // ML match score
+              website: game.website || null,
+              rawg_url: game.rawg_url || null,
+              metacritic_url: game.metacritic_url || null,
+              slug: game.slug || null,
+              playtime: game.playtime || 0,
+              movies: game.movies || [],
+              short_screenshots: game.short_screenshots || []
             }));
             
             setGames(transformedGames);
+            // Save to localStorage for persistence
+            localStorage.setItem('savedRecommendations', JSON.stringify(transformedGames));
             console.log('ML Recommendations:', data.recommendations);
             return;
           }
@@ -78,10 +111,19 @@ export default function Results() {
           id: game.id,
           name: game.name,
           rating: game.rating || 0,
-          image: game.background_image || 'https://via.placeholder.com/400x300?text=No+Image'
+          image: game.background_image || 'https://via.placeholder.com/400x300?text=No+Image',
+          website: game.website || null,
+          rawg_url: game.rawg_url || null,
+          metacritic_url: game.metacritic_url || null,
+          slug: game.slug || null,
+          playtime: game.playtime || 0,
+          movies: game.movies || [],
+          short_screenshots: game.short_screenshots || []
         }));
         
         setGames(transformedGames);
+        // Save to localStorage for persistence
+        localStorage.setItem('savedRecommendations', JSON.stringify(transformedGames));
       } catch (err) {
         console.error('Error fetching games:', err);
         setError(err.message);
@@ -358,6 +400,33 @@ export default function Results() {
           </span>
         </div>
 
+        {/* All Games Grid View */}
+        {showAllGames && (
+          <div className="mt-16">
+            <h2 className="text-3xl font-bold text-center mb-8">All Recommended Games</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {games.map((game, index) => (
+                <div 
+                  key={game.id} 
+                  className="relative group cursor-pointer"
+                  onClick={() => {
+                    setCurrentIndex(index);
+                    setSelectedGameId(game.id);
+                  }}
+                >
+                  <GameCard game={game} />
+                  <div className="mt-2 text-center">
+                    <p className="font-semibold">{game.name}</p>
+                    {game.match_percentage !== undefined && (
+                      <span className="text-green-400 text-sm">{game.match_percentage}% match</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Footer Actions */}
         <div className="flex justify-center gap-4 mt-16">
           <Button
@@ -379,9 +448,10 @@ export default function Results() {
           <Button
             variant="secondary"
             size="lg"
+            onClick={() => setShowAllGames(!showAllGames)}
             className="transition-all duration-300 hover:scale-105"
           >
-            View All {games.length} Games
+            {showAllGames ? 'Hide All Games' : `View All ${games.length} Games`}
           </Button>
         </div>
 

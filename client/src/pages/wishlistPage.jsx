@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trash2, ArrowLeft, Info } from "lucide-react";
+import { Trash2, ArrowLeft, Info, ShoppingCart, X, Loader2 } from "lucide-react";
 import GameCard from "../components/gamecard";
 import Button from "../components/button";
 import { LightPillar } from "../components/background.jsx";
@@ -11,6 +11,24 @@ export default function WishlistPage() {
   const navigate = useNavigate();
   const { wishlist, removeGame, clearWishlist, isInWishlist, toggleGame } = useWishlist();
   const [selectedGameId, setSelectedGameId] = useState(null);
+  const [similarGames, setSimilarGames] = useState([]);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
+  const [showSimilar, setShowSimilar] = useState(false);
+
+  const fetchSimilarGames = async (gameId) => {
+    setLoadingSimilar(true);
+    setShowSimilar(true);
+    try {
+      const response = await fetch(`http://localhost:5000/api/games/${gameId}/similar`);
+      const data = await response.json();
+      setSimilarGames(data.slice(0, 5));
+    } catch (error) {
+      console.error('Error fetching similar games:', error);
+      setSimilarGames([]);
+    } finally {
+      setLoadingSimilar(false);
+    }
+  };
 
   if (wishlist.length === 0) {
     return (
@@ -122,6 +140,26 @@ export default function WishlistPage() {
                 Details
               </button>
 
+              {/* Buy Now button */}
+              <a
+                href={`https://www.google.com/search?q=buy+${encodeURIComponent(game.name)}+video+game`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="absolute bottom-16 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-green-600 hover:bg-green-500 px-4 py-1.5 rounded-full text-xs text-white transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-lg"
+              >
+                <ShoppingCart size={13} />
+                Buy Now
+              </a>
+
+              {/* Games Like button */}
+              <button
+                onClick={(e) => { e.stopPropagation(); fetchSimilarGames(game.id); }}
+                className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 px-4 py-1.5 rounded-full text-xs text-white transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-lg"
+              >
+                Games Like This
+              </button>
+
               {/* Added date */}
               <div className="mt-2 text-sm text-purple-300">
                 Added {new Date(game.addedAt).toLocaleDateString()}
@@ -162,6 +200,59 @@ export default function WishlistPage() {
             if (game) toggleGame(game);
           }}
         />
+      )}
+
+      {/* Similar Games Modal */}
+      {showSimilar && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowSimilar(false); }}
+        >
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-purple-700/40 shadow-2xl shadow-purple-900/60"
+            style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #2e1065 40%, #1a1a2e 100%)" }}
+          >
+            <button
+              onClick={() => setShowSimilar(false)}
+              className="absolute top-4 right-4 z-20 bg-purple-800/60 hover:bg-purple-700 p-2 rounded-full transition-colors"
+            >
+              <X size={20} />
+            </button>
+            
+            <div className="p-6">
+              <h2 className="text-2xl font-bold mb-4">Games Like This</h2>
+              
+              {loadingSimilar ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="animate-spin" size={32} />
+                </div>
+              ) : similarGames.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {similarGames.map((game) => (
+                    <div 
+                      key={game.id} 
+                      className="cursor-pointer hover:scale-[1.02] transition-transform"
+                      onClick={() => {
+                        setShowSimilar(false);
+                        setSelectedGameId(game.id);
+                      }}
+                    >
+                      <GameCard game={{ 
+                        id: game.id, 
+                        name: game.name, 
+                        rating: game.rating, 
+                        image: game.background_image 
+                      }} />
+                      <p className="mt-2 text-sm font-medium text-center">{game.name}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-purple-300 py-8">No similar games found</p>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

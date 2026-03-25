@@ -383,6 +383,13 @@ class WeightedTagRecommender:
                 "genres": game.get("genres", []),
                 "platforms": game.get("platforms", []),
                 "metacritic": game.get("metacritic"),
+                "website": game.get("website"),
+                "metacritic_url": game.get("metacritic_url"),
+                "rawg_url": f"https://rawg.io/games/{game.get('slug', '')}" if game.get('slug') else None,
+                "slug": game.get("slug"),
+                "playtime": game.get("playtime", 0),
+                "movies": game.get("movies", []),
+                "short_screenshots": game.get("short_screenshots", []),
                 "similarity_score": round(item["similarity"], 3),
                 "match_percentage": item["match_percentage"],
                 "final_score": round(item["final_score"])

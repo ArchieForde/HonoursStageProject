@@ -1,5 +1,5 @@
 import express from "express";
-import { getGames, getGameDetails, getRecommendations } from "../controllers/gameController.js";
+import { getGames, getGameDetails, getRecommendations, getSimilarGames } from "../controllers/gameController.js";
 
 const router = express.Router();
 
@@ -11,5 +11,8 @@ router.get("/:id", getGameDetails);
 
 // POST /api/games/recommend - ML-powered recommendations (new)
 router.post("/recommend", getRecommendations);
+
+// GET /api/games/:id/similar - Fetch similar games
+router.get("/:id/similar", getSimilarGames);
 
 export default router;

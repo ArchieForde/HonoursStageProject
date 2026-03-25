@@ -1,4 +1,4 @@
-import { fetchGamesByGenre, fetchGameDetails } from "../services/rawgServices.js";
+import { fetchGamesByGenre, fetchGameDetails, fetchSimilarGames } from "../services/rawgServices.js";
 import axios from "axios";
 
 const PYTHON_API_URL = process.env.PYTHON_API_URL || "http://localhost:5001";
@@ -20,6 +20,16 @@ export const getGameDetails = async (req, res) => {
     res.json(details);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch game details" });
+  }
+};
+
+export const getSimilarGames = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const similarGames = await fetchSimilarGames(id);
+    res.json(similarGames);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch similar games" });
   }
 };
 
